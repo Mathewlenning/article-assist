@@ -12,9 +12,32 @@
  * @var ?string                                             $footerTemplate
  * @var ?string                                             $additionalScriptsTemplate
  */
-
-$page_title = 'Article Assistant - Error';
-$body_class = 'bg-dark text-light';
-$bodyTemplate = 'system.error.body';
 ?>
-@include('layouts.index')
+    <!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    @include('system.meta')
+    @if(!empty($additionalMetaTemplate))
+        @include($additionalMetaTemplate)
+    @endif
+    <title>{{$page_title}}</title>
+    @include('assets.bootstrap.css')
+    @include('assets.app.css')
+    @include('assets.app.js')
+</head>
+<body class="antialiased {{$body_class}}">
+@include('assets.icons.svg')
+@if(!empty($headerTemplate))
+    @include($headerTemplate)
+@endif
+@include($bodyTemplate)
+@if(!empty($footerTemplate))
+    @include($footerTemplate)
+@endif
+
+@include('assets.bootstrap.js')
+@if(!empty($additionalScripts))
+    @include($additionalScriptsTemplate)
+@endif
+</body>
+</html>

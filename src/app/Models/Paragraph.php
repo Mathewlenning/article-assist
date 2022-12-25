@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Mvsc\Models\MvscBase;
 use Illuminate\Database\Eloquent;
 
 /**
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent;
  * @property string updated_at
  *
  */
-class Paragraph extends Base
+class Paragraph extends MvscBase
 {
     protected $fillable = [
         'document_id',

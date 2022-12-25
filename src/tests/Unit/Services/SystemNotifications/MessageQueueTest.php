@@ -2,13 +2,13 @@
 
 namespace Tests\Unit;
 
-use App\Services\SystemNotifications\MessageQueue;
+use App\Services\Mvsc\SystemNotifications\MessageQueue;
 use PHPUnit\Framework\TestCase;
 
 class MessageQueueTest extends TestCase
 {
     /**
-     * @covers \App\Services\SystemNotifications\MessageQueue::addMessage
+     * @covers \App\Services\Mvsc\SystemNotifications\MessageQueue::addMessage
      */
     public function testAddMessage()
     {
@@ -23,7 +23,7 @@ class MessageQueueTest extends TestCase
     }
 
     /**
-     * @covers \App\Services\SystemNotifications\MessageQueue::clearMessages
+     * @covers \App\Services\Mvsc\SystemNotifications\MessageQueue::clearMessages
      */
     public function testClearAllMessages()
     {
@@ -38,7 +38,7 @@ class MessageQueueTest extends TestCase
     }
 
     /**
-     * @covers \App\Services\SystemNotifications\MessageQueue::clearMessages
+     * @covers \App\Services\Mvsc\SystemNotifications\MessageQueue::clearMessages
      */
     public function testClearOneMessageType()
     {
@@ -53,7 +53,7 @@ class MessageQueueTest extends TestCase
     }
 
     /**
-     * @covers \App\Services\SystemNotifications\MessageQueue::getMessages
+     * @covers \App\Services\Mvsc\SystemNotifications\MessageQueue::getMessages
      */
     public function testGetAllMessages()
     {
@@ -69,7 +69,7 @@ class MessageQueueTest extends TestCase
     }
 
     /**
-     * @covers \App\Services\SystemNotifications\MessageQueue::getMessages
+     * @covers \App\Services\Mvsc\SystemNotifications\MessageQueue::getMessages
      */
     public function testGetOneMessageType()
     {

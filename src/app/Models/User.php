@@ -3,7 +3,7 @@
 namespace App\Models;
 
 //use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Interfaces\ValidationRules;
+use App\Services\Mvsc\Contracts\ValidationRules;
 use Illuminate\Database\Eloquent;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;

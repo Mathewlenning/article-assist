@@ -198,7 +198,7 @@ return [
         /*
          * Custom Service Providers
          */
-        App\Providers\SystemNotificationsProvider::class,
+        App\Providers\MvscServiceProvider::class,
         App\Providers\OpenAiServiceProvider::class,
     ],
 
@@ -216,8 +216,4 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
-
-    'default_view' => env('APP_DEFAULT_VIEW', 'index'),
-    'default_resource' => env('APP_DEFAULT_RESOURCE', 'document'),
-    'default_notification_type' => env('APP_DEFAULT_NOTIFICATION_TYPE', 'alert-light'),
 ];
