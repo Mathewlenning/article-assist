@@ -1,0 +1,9 @@
+# IntelliJ
+.idea
+*.iml
+out
+out/
+gen
+
+#project
+docs/*
