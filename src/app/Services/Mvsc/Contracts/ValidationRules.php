@@ -9,5 +9,5 @@ namespace App\Services\Mvsc\Contracts;
  */
 interface ValidationRules
 {
-    static public function getFormValidationRules(?array $additionalRules = []): array;
+    public function getFormValidationRules(?array $additionalRules = []): array;
 }

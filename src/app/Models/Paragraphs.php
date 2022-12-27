@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent;
  * @property string updated_at
  *
  */
-class Paragraph extends MvscBase
+class Paragraphs extends MvscBase
 {
     protected $fillable = [
         'document_id',
@@ -27,18 +27,18 @@ class Paragraph extends MvscBase
     public function Document(): Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(
-            Document::class,
+            Documents::class,
             'document_id',
             'document_id')
             ->withDefault();
     }
 
-    public static function getFormValidationRules(?array $additionalRules = []): array
+    public function getFormValidationRules(?array $additionalRules = []): array
     {
         return [
-            'document_id' => 'required|integer',
-            'primary_argument' => 'require_unless:paragraph_id, null|string|nullable',
-            'supporting_arguments' => 'array',
+            'paragraph_id'=> 'integer',
+            'document_id' => 'integer',
+            'primary_argument' => 'required_unless:paragraph_id, null|string|nullable',
             'supporting_arguments.*' => 'string|nullable'
         ] + $additionalRules;
     }

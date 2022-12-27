@@ -183,7 +183,7 @@ the word `Template` to indicate that they belong to a layout.
 @endif
 
 @include('assets.js.bootstrap.js')
-@if(!empty($additionalScripts))
+@if(!empty($additionalScriptsTemplate))
     @include($additionalScriptsTemplate)
 @endif
 </body>

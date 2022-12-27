@@ -2,7 +2,6 @@
 
 namespace App\Services\Mvsc\Controllers;
 
-use App\Services\Mvsc\Config;
 use App\Services\Mvsc\Contracts\SingleTaskController;
 use App\Services\Mvsc\Contracts\SystemNotifications;
 use Illuminate\Container\Container;
@@ -10,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Http\Request;
+use App\Services\Mvsc\Requests\Request;
 use Illuminate\Routing\Controller as BaseController;
 
 
@@ -24,9 +23,9 @@ abstract class Controller extends BaseController implements SingleTaskController
 
     public function __construct(
         protected Container $app,
-        protected SystemNotifications $msgQue,
-        protected Config $config)
-    {
+        protected Request $request,
+        protected SystemNotifications $msgQue
+    ) {
     }
 
     public function setSubController(?SingleTaskController $controller = null): static
@@ -35,18 +34,18 @@ abstract class Controller extends BaseController implements SingleTaskController
         return $this;
     }
 
-    public function execute(Request $request): bool
+    public function execute(): bool
     {
-        return $this->executeSubController($request);
+        return $this->executeSubController();
     }
 
-    protected function executeSubController(Request $request): bool
+    protected function executeSubController(): bool
     {
         if (!$this->subController instanceof SingleTaskController) {
             return true;
         }
 
-        return $this->subController->execute($request);
+        return $this->subController->execute();
     }
 
     public function getResponse(): mixed
@@ -63,15 +62,23 @@ abstract class Controller extends BaseController implements SingleTaskController
         return $this->subController->getResponse();
     }
 
-    protected function getResourceModel(string $name = ''): ?Model
+    protected function getModel(string $name = ''): ?Model
     {
-        $resourceName = 'App\Models\\'.ucfirst($name);
-
-        if ($resourceName === ''
-            || !class_exists($resourceName)) {
-            return null;
+        if (!empty($name)) {
+            return $this->request->getModel($name);
         }
 
-        return new $resourceName();
+        return $this->request->getModel($this->request->getView());
+    }
+
+    protected function logErrorsToQueue(array $errors)
+    {
+        foreach ($errors AS $errorGroup)
+        {
+            foreach ($errorGroup AS $msg)
+            {
+                $this->msgQue->addMessage($msg, 'errors');
+            }
+        }
     }
 }

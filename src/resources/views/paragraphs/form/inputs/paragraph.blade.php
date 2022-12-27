@@ -29,7 +29,7 @@ $index = $request->input('index', 0);
             @endif
         </div>
         <div class="p-2 text-right">
-            <a href="javascript:void(0)" class="btn btn-light btn-sm" onclick="addInput(event)" data-view="paragraphs.form.inputs.sentence">
+            <a href="javascript:void(0)" class="btn btn-light btn-sm" onclick="addInput(event)" data-view-template="paragraphs.form.inputs.sentence">
                 <svg>
                     <use href="#icon-plus"/>
                 </svg>

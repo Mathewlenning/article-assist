@@ -3,26 +3,20 @@
 namespace App\Services\Mvsc\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\View as ViewFactory;
 use Illuminate\Contracts\View\View;
 
 class Ajax extends Controller
 {
-    protected ?Request $request = null;
-
-    public function execute(Request $request): bool
-    {
-        $this->request = $request;
-        return parent::execute($request);
-    }
+    protected ?string $location = null;
 
     public function getResponse(): mixed
     {
         $response = [
             'notifications' => $this->getNotifications(),
             'body' => $this->getResponseBody(),
-            'location' => $this->request->url()
+            'location' => $this->location ?? $this->request->url()
         ];
 
         return new JsonResponse($response);
@@ -38,7 +32,7 @@ class Ajax extends Controller
 
     protected function getFormattedMessages(): string
     {
-        return ViewFactory::make('system.notifications', ['config' => $this->config, 'msgQue' => $this->msgQue])->render();
+        return ViewFactory::make('system.notifications', ['msgQue' => $this->msgQue])->render();
     }
 
     protected function getResponseBody(): mixed
@@ -47,8 +41,13 @@ class Ajax extends Controller
 
         if ($response instanceof View)
         {
-
             $response = $response->render();
+        }
+
+        if ($response instanceof RedirectResponse)
+        {
+            $this->location = $response->getTargetUrl();
+            return null;
         }
 
         return $response;

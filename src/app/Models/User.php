@@ -50,7 +50,7 @@ class User extends Authenticatable implements ValidationRules
     public function documents(): Eloquent\Relations\HasMany
     {
         return $this->hasMany(
-            Document::class,
+            Documents::class,
             'user_id',
             'user_id'
         );
@@ -61,7 +61,7 @@ class User extends Authenticatable implements ValidationRules
         return $this->user_id === null;
     }
 
-    static public function getFormValidationRules(?array $additionalRules = []): array
+    public function getFormValidationRules(?array $additionalRules = []): array
     {
        return [
                'name' => 'required|string',

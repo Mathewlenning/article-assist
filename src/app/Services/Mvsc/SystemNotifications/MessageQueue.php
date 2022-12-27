@@ -13,11 +13,16 @@ class MessageQueue implements SystemNotifications
     /**
      * Messages are stored by msgType
      * @param   string  $msg      The message
-     * @param   string  $msgType  The type of message e.g. ('message', 'warning', 'error')
+     * @param   string  $msgType  The type of message e.g. ('messages', 'warnings', 'errors')
      * @return $this
      */
-    public function addMessage(string $msg, string $msgType = 'messages'): static
+    public function addMessage(string $msg = '', string $msgType = 'messages'): static
     {
+        if (empty($msg))
+        {
+            return $this;
+        }
+
         if (!array_key_exists($msgType,$this->queue)) {
            $this->queue[$msgType] = [];
         }
@@ -27,9 +32,14 @@ class MessageQueue implements SystemNotifications
         return $this;
     }
 
+    public function addMessages(array $messages, string $msgType = 'messages')
+    {
+
+    }
+
     /**
      * If $msgType is empty, the whole queue returned
-     * @param ?string  $msgType  The type of message e.g. ('message', 'warning', 'error')
+     * @param ?string  $msgType  The type of message e.g. ('messages', 'warnings', 'errors')
      * @return array
      */
     public function getMessages(?string $msgType = ''): array
@@ -45,7 +55,7 @@ class MessageQueue implements SystemNotifications
 
     /**
      * If $msgType is empty it clears all messages.
-     * @param   ?string  $msgType  The type of message e.g. ('message', 'warning', 'error')
+     * @param   ?string  $msgType  The type of message e.g. ('messages', 'warnings', 'errors')
      * @return $this
      */
     public function clearMessages(?string $msgType = ''): static
@@ -68,7 +78,7 @@ class MessageQueue implements SystemNotifications
 
     /**
      * If $msgType is empty it checks if any messages exist.
-     * @param   ?string  $msgType  The type of message e.g. ('message', 'warning', 'error')
+     * @param   ?string  $msgType  The type of message e.g. ('messages', 'warnings', 'errors')
      * @return bool
      */
     public function has(?string $msgType = null): bool

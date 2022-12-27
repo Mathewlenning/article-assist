@@ -11,9 +11,8 @@ use Illuminate\Database\Eloquent;
  * @property string $title
  * @property string created_at
  * @property string updated_at
- *
  */
-class Document extends MvscBase
+class Documents extends MvscBase
 {
     use Eloquent\Factories\HasFactory;
 
@@ -35,15 +34,23 @@ class Document extends MvscBase
 
     public function paragraphs(): Eloquent\Relations\HasMany
     {
-        return $this->hasMany(Paragraph::class);
+        return $this->hasMany(Paragraphs::class);
     }
 
-    public static function getFormValidationRules(?array $additionalRules = []): array
+    public function getFormValidationRules(?array $additionalRules = []): array
     {
-        return [
-            'document_id' => 'required|integer',
-            'user_id' => 'require_unless:document_id, null|int',
-            'title' => 'require_unless:document_id, null|string'
-        ] + $additionalRules;
+        $baseRules = [
+                'document.document_id' => 'integer',
+                'document.user_id' => 'required_unless:document_id,null|integer',
+                'document.title' => 'required_unless:document_id,null|string'
+        ];
+
+        $paragraphRules = $this->paragraphs()->getModel()->getFormValidationRules();
+
+        foreach ($paragraphRules AS $key => $rule){
+            $baseRules['document.paragraphs.*.' . $key] = $rule;
+        }
+
+        return $baseRules + $additionalRules;
     }
 }

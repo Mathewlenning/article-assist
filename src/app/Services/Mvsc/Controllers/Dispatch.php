@@ -2,36 +2,35 @@
 
 namespace App\Services\Mvsc\Controllers;
 
-use App\Services\Mvsc\Config;
 use App\Services\Mvsc\Contracts\SingleTaskController;
 use App\Services\Mvsc\Contracts\SystemNotifications;
 use Illuminate\Container\Container;
-use Illuminate\Http\Request;
+use App\Services\Mvsc\Requests\Request;
+use Illuminate\Support\Facades\App;
+use Throwable;
 
 class Dispatch extends Controller
 {
     public function __construct(
         Container $app,
-        SystemNotifications $msgQue,
-        Config $config)
-    {
-        parent::__construct($app, $msgQue, $config);
+        Request $request,
+        SystemNotifications $msgQue
+    ) {
+        parent::__construct($app, $request, $msgQue);
     }
 
-    public function execute(Request $request): bool
+    public function execute(): bool
     {
         try {
+            $this->setSubController(
+                $this->buildTaskControllers(
+                    $this->request
+                ))
+                ->executeSubController();
 
-            $this->setSubController($this->buildTaskControllers($request));
-            $this->executeSubController($request);
-        } catch (\Throwable $e){
-
-            if (!$this->config->isProduction())
-            {
-                throw $e;
-            }
-
+        } catch (Throwable $e){
             $this->msgQue->addMessage($e->getMessage(), 'errors');
+
             return false;
         }
 
@@ -40,20 +39,13 @@ class Dispatch extends Controller
 
     protected function buildTaskControllers(Request $request): SingleTaskController
     {
-        $tasks = $this->getTaskList($request);
-        $resources = $request->input('resources', [$this->config->get('view')]);
-        $ids = $request->input('ids', [$this->config->get('id')]);
+        $tasks = $request->getTaskList();
 
         // Build task in reverse order
         $tasks = array_reverse($tasks);
-        $resources = array_reverse($resources);
-        $ids = array_reverse($ids);
 
-        $resource = $resources[0];
-        $id = $ids[0];
         $controller = null;
         $subController = null;
-
 
         foreach ($tasks AS $index => $task) {
             $controllerName = 'App\Services\Mvsc\Controllers\\' . $task;
@@ -61,48 +53,21 @@ class Dispatch extends Controller
                 continue;
             }
 
-            if (isset($resources[$index])) {
-                $resource = $resources[$index];
-            }
-
-            if (isset($ids[$index])) {
-                $id = $ids[$index];
-            }
-
-            $config = new Config(
-                $this->config->get('view'),
-                $this->config->get('template'),
-                $resource,
-                $id
-            );
-
             /** @var SingleTaskController $controller */
-            $controller = new $controllerName($this->app, $this->msgQue, $config);
+            $controller = new $controllerName(
+                $this->app, $this->request, $this->msgQue);
 
             $controller->setSubController($subController);
             $subController = $controller;
         }
 
         if (!$controller instanceof SingleTaskController){
-            $controller = new Display($this->app, $this->msgQue, $this->config);
+            $controller = new Get($this->app, $this->request, $this->msgQue);
         }
 
         return $controller;
     }
 
-    protected function getTaskList(Request $request): array
-    {
-        // Ajax controller is only allowed for ajax requests.
-        $tasks = array_filter(
-            $request->input('tasks', ['Display']),
-            fn($value) => $value !== 'Ajax');
-
-        if ($request->ajax()){
-            array_unshift($tasks, 'Ajax');
-        }
-
-        return $tasks;
-    }
 
     public function getResponse(): mixed
     {
@@ -112,7 +77,6 @@ class Dispatch extends Controller
         {
             return view('system.error',
                 [
-                    'config' => $this->config,
                     'msgQue' => $this->msgQue
                 ]
             );

@@ -36,7 +36,7 @@
 @endif
 
 @include('assets.bootstrap.js')
-@if(!empty($additionalScripts))
+@if(!empty($additionalScriptsTemplate))
     @include($additionalScriptsTemplate)
 @endif
 </body>
