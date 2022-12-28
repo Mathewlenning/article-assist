@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id('document_id');
-            $table->foreignId('user_id');
+            $table->bigInteger('user_id', false, true)->default(0);
             $table->string('title');
             $table->timestamps();
         });

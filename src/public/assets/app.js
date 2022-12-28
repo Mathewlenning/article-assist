@@ -41,6 +41,8 @@ function testPost()
         data: jQuery('#document-form').serialize()
     }
 
+    settings.data._method='put';
+
     return makeRequest('/documents/form', 'post', settings);
 
 }

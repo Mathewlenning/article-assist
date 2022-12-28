@@ -4,6 +4,7 @@ namespace App\Services\Mvsc\Controllers;
 
 use App\Services\Mvsc\Contracts\SingleTaskController;
 use App\Services\Mvsc\Contracts\SystemNotifications;
+use App\Services\Mvsc\Models\MvscBase;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -11,6 +12,9 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Services\Mvsc\Requests\Request;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Validator as ValidatorFactory;
+use Illuminate\Validation\Validator;
+use RuntimeException;
 
 
 abstract class Controller extends BaseController implements SingleTaskController
@@ -62,13 +66,19 @@ abstract class Controller extends BaseController implements SingleTaskController
         return $this->subController->getResponse();
     }
 
-    protected function getModel(string $name = ''): ?Model
+    protected function getModel(string $name = '', ?int $id = null): ?Model
     {
-        if (!empty($name)) {
-            return $this->request->getModel($name);
+        if (empty($name)) {
+            $name = $this->request->getView();
         }
 
-        return $this->request->getModel($this->request->getView());
+        $model = $this->request->getModel($name);
+
+        if ($model === null || $id === null) {
+            return $model;
+        }
+
+        return $model->findOrNew($id);
     }
 
     protected function logErrorsToQueue(array $errors)

@@ -21,14 +21,14 @@ class Collection extends Eloquent\Collection
      * @param mixed $key
      * @return Eloquent\Model
      */
-    public function findOrNew(mixed $key): Eloquent\Model
+    public function findOrNew(mixed $key): Collection
     {
-        $model = $this->find($key);
+        $models = $this->find($key);
 
-        if ($model instanceof $this->modelClass) {
-            return $model;
+        if (!$models->isEmpty()) {
+            return $models;
         }
 
-        return App::make($this->modelClass::class);
+        return new static($this->modelClass, [App::make($this->modelClass::class)]);
     }
 }

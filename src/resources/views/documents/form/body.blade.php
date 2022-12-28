@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var App\Models\Documents $model
+ */
+?>
 <div class="position-fixed bg-light absolute-screen"></div>
 <div class="container-fluid">
     <div class="row">
@@ -23,6 +28,8 @@
                     </div>
                 </div>
                 <input type="hidden" name="document[document_id]" value="{{$model->document_id}}"/>
+                <?php $method = empty($model->document_id) ? 'POST': 'PUT';?>
+                @method($method)
                 @csrf
             </form>
         </div>

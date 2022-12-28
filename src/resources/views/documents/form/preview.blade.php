@@ -1,16 +1,21 @@
 <?php
 /**
- * @var Illuminate\Database\Eloquent\Model|null             $model
- * @var Illuminate\Http\Request                             $request
- * @var App\Services\Mvsc\Controllers\                      $config
- * @var \App\Services\Mvsc\SystemNotifications\MessageQueue $msgQue
+ * @var Illuminate\Database\Eloquent\Model|null $model
+ * @var App\Services\Mvsc\Requests\Request $request
  */
-$document = $request->input('document', ['paragraphs' => []]);
+$paragraphs = $request->input('document')['paragraphs'] ??  $model->paragraphs();
 $hasParagraphs = false;
 ?>
 <div class="col text-light bg-dark lead">
-    @foreach ($document['paragraphs'] as $paragraph)
-            <?php $hasParagraphs = true; ?>
+    @foreach ($paragraphs as $paragraph)
+            <?php
+                $hasParagraphs = true;
+				if(!is_array($paragraph))
+                {
+					$paragraph = $paragraph->toArray();
+                }
+            ?>
+
         <p>
             {{$paragraph['primary_argument']}}
             @foreach($paragraph['supporting_arguments'] AS $sentence)

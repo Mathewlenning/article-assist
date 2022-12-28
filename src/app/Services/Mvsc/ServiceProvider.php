@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Providers;
+namespace App\Services\Mvsc;
 
 use App\Services\Mvsc\Contracts\SystemNotifications;
 use App\Services\Mvsc\SystemNotifications\MessageQueue;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
-class MvscServiceProvider extends ServiceProvider
+class ServiceProvider extends BaseServiceProvider
 {
     /**
      * Register services.

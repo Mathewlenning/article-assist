@@ -198,7 +198,7 @@ return [
         /*
          * Custom Service Providers
          */
-        App\Providers\MvscServiceProvider::class,
+        App\Services\Mvsc\ServiceProvider::class,
         App\Providers\OpenAiServiceProvider::class,
     ],
 

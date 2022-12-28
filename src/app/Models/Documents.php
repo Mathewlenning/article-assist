@@ -19,7 +19,6 @@ class Documents extends MvscBase
     protected $primaryKey = 'document_id';
 
     protected $fillable = [
-        'user_id',
         'title'
     ];
 
@@ -29,7 +28,7 @@ class Documents extends MvscBase
             User::class,
             'user_id',
             'user_id'
-        )->withDefault(['name' => 'Guest']);
+        )->withDefault(['user_id' => 0,'name' => 'Guest']);
     }
 
     public function paragraphs(): Eloquent\Relations\HasMany
@@ -39,18 +38,35 @@ class Documents extends MvscBase
 
     public function getFormValidationRules(?array $additionalRules = []): array
     {
-        $baseRules = [
-                'document.document_id' => 'integer',
-                'document.user_id' => 'required_unless:document_id,null|integer',
-                'document.title' => 'required_unless:document_id,null|string'
-        ];
+        $return = [
+                'document_id' => 'integer',
+                'user_id' => 'integer',
+                'title' => 'required_unless:document_id,null|string',
+                'paragraphs' => 'array'
+        ] + $additionalRules;
+    }
 
-        $paragraphRules = $this->paragraphs()->getModel()->getFormValidationRules();
+    public function getFormInputName(): string
+    {
+        return 'document';
+    }
 
-        foreach ($paragraphRules AS $key => $rule){
-            $baseRules['document.paragraphs.*.' . $key] = $rule;
+    public function createDependents(array $attributes = []): static {
+        if (empty($this->document_id)
+            || empty($attributes['paragraphs'][0]['primary_argument'])
+        ){
+            return $this;
         }
 
-        return $baseRules + $additionalRules;
+        $paragraphsModel = $this->paragraphs()->getModel();
+
+        foreach ($attributes['paragraphs'] AS $index => $paragraph)
+        {
+            $paragraph['document_id'] = $this->document_id;
+            $paragraph['order'] = $index + 1;
+            $paragraphsModel->create($paragraph);
+        }
+
+        return $this;
     }
 }

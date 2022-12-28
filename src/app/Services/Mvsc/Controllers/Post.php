@@ -2,30 +2,45 @@
 
 namespace App\Services\Mvsc\Controllers;
 
-
 use App\Services\Mvsc\Models\MvscBase;
-use Illuminate\Support\Facades\Validator;
-use RuntimeException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 
+/**
+ * Handles CRUD Create operations
+ */
 class Post extends Controller
 {
+    protected ?MvscBase $model = null;
+
     public function execute(): bool
     {
         /** @var MvscBase $model */
         $model = $this->getModel();
-        $validator = Validator::make($this->request->all(),
-        $model->getFormValidationRules());
 
-        if ($validator->fails())
+        if (!$model->authorize('create', $this->request->user()))
         {
-            $this->logErrorsToQueue($validator->errors()->toArray());
-            throw new RuntimeException(code:422);
+            throw new AuthorizationException(code: 401);
         }
 
-        $validated = $validator->validated();
+        $attributes = $this->validateRequestInput($this->request, $model);
+        $this->model = $model->create($attributes)->createDependents($attributes);
 
-        $model->create($validated);
+        $this->msgQue->addMessage('Record(s) created');
 
         return $this->executeSubController();
+    }
+
+    public function getResponse(): mixed
+    {
+        if (empty($this->model->getKey()))
+        {
+            return parent::getResponse();
+        }
+
+        return new RedirectResponse(
+            $this->request->url(). '/' . $this->model->getKey(),
+            303
+        );
     }
 }

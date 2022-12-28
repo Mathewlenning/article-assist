@@ -6,6 +6,9 @@ use App\Services\Mvsc\Requests\Request;
 use Illuminate\Support\Facades\View as ViewFactory;
 use Illuminate\View\View;
 
+/**
+ * Handles CRUD Read operations
+ */
 class Get extends Controller
 {
     protected ?View $view = null;
@@ -13,7 +16,7 @@ class Get extends Controller
     public function execute(): bool
     {
         $viewData = [
-            'model' => $this->getModel(),
+            'model' => $this->getModel(id: $this->request->getId()),
             'request' => $this->request,
             'msgQue' => $this->msgQue
         ];

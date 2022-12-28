@@ -4,3 +4,5 @@
 out
 out/
 gen
+
+!/src/_ide_helper.php

@@ -5,11 +5,11 @@ namespace App\Services\Mvsc\Requests;
 use App\Services\Mvsc\Models\MvscBase;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request AS BaseRequest;
 use Illuminate\Support\Facades\Config;
 use RuntimeException;
 
-class Request extends FormRequest
+class Request extends BaseRequest
 {
     protected ?string $view = null;
     protected ?string $view_template = null;
@@ -18,20 +18,14 @@ class Request extends FormRequest
 
     public function setView(?string $view = null): static
     {
-        $this->view = $view
-            ?? Config::get(
-                'mvsc.default_view',
-                'index'
-            );
+        $this->view = $view ?? Config::get('mvsc.default_view', 'index');
 
         return $this;
     }
 
     public function getView()
     {
-        return $this->input(
-            'view',
-            $this->view);
+        return $this->input('view', $this->view);
     }
 
     public function setViewTemplate(?string $template = null): static
@@ -52,9 +46,7 @@ class Request extends FormRequest
 
     public function getViewTemplate(): ?string
     {
-        return $this->input(
-            'view_template',
-            $this->view_template);
+        return $this->input('view_template', $this->view_template);
     }
 
     public function setIds(int $id = null): static
@@ -64,13 +56,23 @@ class Request extends FormRequest
         return $this;
     }
 
+    public function getIds(): array
+    {
+        return $this->ids;
+    }
+
+    public function getId(): int
+    {
+        return $this->ids[0] ?? 0;
+    }
+
+
     public function setModel(?string $modelName = null): static
     {
         if (empty($modelName) || $modelName === 'index')
         {
             $this->model = $this->getModel(Config::get('mvsc.default_model'));
-          ;
-           return $this;
+            return $this;
         }
 
         $this->model = $this->getModel($modelName);
@@ -91,49 +93,31 @@ class Request extends FormRequest
         return new $modelFullName();
     }
 
+    /**
+     * Task list is used by the dispatcher to determine which controllers to
+     * load during this execution cycle. The default behavior can be overridden by adding
+     * a task variable in the request.
+     *
+     * @return array
+     */
     public function getTaskList(): array
     {
-        // Ajax controller is only allowed for ajax requests.
-        $tasks = array_filter(
-            $this->input('tasks',[$this->method()]),
-            fn($value) => $value !== 'Ajax');
+        $requestTasks = $this->input('tasks',[$this->method()]);
 
-        if ($this->ajax()){
-            array_unshift($tasks, 'Ajax');
+        if(!is_array($requestTasks)){
+            $requestTasks = [$requestTasks];
         }
 
-        return $tasks;
-    }
+        // Ajax controller is only allowed for ajax requests.
+        $preparedTasks = array_filter(
+            $requestTasks,
+            fn($value) => $value !== 'Ajax'
+        );
 
+        if ($this->ajax()){
+            array_unshift($preparedTasks, 'Ajax');
+        }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
-    public function rules(): array
-    {
-        return [];
-    }
-
-    public function setRules($rules = []): static
-    {
-        $this->validator->setRules($rules);
-        return $this;
-    }
-
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
-    {
-        return true;
-    }
-
-    protected function failedValidation(Validator $validator)
-    {
-        throw new RuntimeException('Validation Failed', 422);
+        return $preparedTasks;
     }
 }

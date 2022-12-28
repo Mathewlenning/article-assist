@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\Mvsc\Models\MvscBase;
 use Illuminate\Database\Eloquent;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * @property int paragraph_id
@@ -18,6 +19,7 @@ class Paragraphs extends MvscBase
 {
     protected $fillable = [
         'document_id',
+        'order',
         'primary_argument',
         'supporting_arguments'
     ];
@@ -41,5 +43,12 @@ class Paragraphs extends MvscBase
             'primary_argument' => 'required_unless:paragraph_id, null|string|nullable',
             'supporting_arguments.*' => 'string|nullable'
         ] + $additionalRules;
+    }
+
+    protected function supportingArguments(): Attribute {
+        return Attribute::make(
+            get: fn ($value) => json_decode($value),
+            set: fn ($value) => json_encode($value)
+        );
     }
 }
