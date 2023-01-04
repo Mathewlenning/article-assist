@@ -1,92 +1,145 @@
-function deleteInput(event) {
-    const targ = jQuery(event.target || event.srcElement);
-    targ.closest('.js-parent-container').remove();
-    refreshDocument();
-}
+article_assist = window.article_assist || {};
 
-function addInput(event)
-{
-    let targ = jQuery(event.target || event.srcElement);
+article_assist.util = {
+    getEventTarg: function (event) {
+        return jQuery(event.target || event.srcElement);
+    },
 
-    if (targ.prop('tagName').toLowerCase() !== 'a') {
-       targ = targ.closest('a');
+    makeRequest: function (url, type, settings = {}) {
+        settings.url = url;
+        settings.type = type.toUpperCase();
+        return jQuery.ajax(settings);
+    },
+
+    makeSortable: function (selector, settings = null){
+        jQuery(selector).sortable(settings);
     }
-
-    const view = targ.attr('data-view-template');
-    const sortGroup = targ.closest('.js-parent-container')
-        .find('.js-sort-group').first();
-    const indexParts = sortGroup.find('input').first().attr('name').split('][');
-    const index = indexParts.length === 4
-        ? Number(indexParts[1])
-        : Number(indexParts[1]) + 1;
-
-    const url = `/documents/form?view_template=${view}&index=${index}`;
-
-    makeRequest(url, 'get').done(function(data, textStatus, jqXHR) {
-        sortGroup.append(data.body);
-        makeSortable();
-    });
 }
 
-function makeRequest(url, type, settings = {})
-{
-    settings.url = url;
-    settings.type = type.toUpperCase();
-    return jQuery.ajax(settings);
-}
+article_assist.documents = {
+    deleteInput: function (event) {
+        const targ =  article_assist.util.getEventTarg(event);
+        targ.closest('js-parent-container').remove();
+        article_assist.documents.refreshDocument();
+    },
 
-function testPost()
-{
-    const settings = {
-        data: jQuery('#document-form').serialize()
-    }
+    refreshDocument: function () {
+        jQuery('#js-sortable-paragraphs li').each((index, element) => {
+            element = jQuery(element);
+            element.find('input[name$="[primary_argument]"]').attr('name', `document[paragraphs][${index}][primary_argument]`);
+            element.find('input[name$="[supporting_arguments][]"]').attr('name', `document[paragraphs][${index}][supporting_arguments][]`);
+        });
+        article_assist.documents.refreshPreview();
+    },
 
-    settings.data._method='put';
+    previewRefreshTimer:null,
 
-    return makeRequest('/documents/form', 'post', settings);
+    refreshPreview: function () {
+        if ( article_assist.documents.previewRefreshTimer !== null) {
+            clearTimeout(article_assist.documents.previewRefreshTimer);
+            article_assist.documents.previewRefreshTimer = null;
+        }
 
-}
+        article_assist.documents.previewRefreshTimer = setTimeout(() => {
+            const data = jQuery('#document-form').serialize();
+            const url = `/documents/form?view_template=documents.form.preview&${data}`;
 
-let refreshTimer = null;
+            article_assist.util.makeRequest(url, 'GET').done(function(data, textStatus, jqXHR) {
+                jQuery('.js-preview-container').html(data.body);
+            });
 
-function refreshPreview() {
-    if (refreshTimer !== null) {
-        clearTimeout(refreshTimer);
-        refreshTimer = null;
-    }
+            article_assist.documents.previewRefreshTimer = null;
+        }, 300)
+    },
 
-    refreshTimer = setTimeout(() => {
-        const form = jQuery('#document-form');
-        const data = form.serialize();
+    addInput:function (event) {
+        let targ =  article_assist.util.getEventTarg(event);
 
-        const url = `/documents/form?view_template=documents.form.preview&${data}`;
-        makeRequest(url, 'GET').done(function(data, textStatus, jqXHR) {
-            jQuery('.js-preview-container').html(data.body);
+        if (targ.prop('tagName').toLowerCase() !== 'a') {
+            targ = targ.closest('a');
+        }
+        const sortGroup = targ.closest('.js-parent-container').find('.js-sort-group').first();
+        const viewTemplate = targ.attr('data-view-template');
+        const url = `/documents/form?view_template=${viewTemplate}`;
+
+        article_assist.util.makeRequest(url, 'get')
+            .done(function(data, textStatus, jqXHR) {
+                sortGroup.append(data.body);
+                article_assist.documents.refreshDocument();
+                article_assist.documents.initSortable();
+            });
+    },
+    initSortable: function() {
+        article_assist.util.makeSortable('#js-sortable-paragraphs', {
+            handle: '.js-sortable-handle',
+            animation: 150,
+            onEnd: (event) => {
+                article_assist.documents.refreshDocument();
+            }
         });
 
-        refreshTimer = null;
-    }, 300)
-}
+        article_assist.util.makeSortable('.js-sortable-sentences', {
+            handle: '.js-sortable-handle',
+            animation: 150,
+            onEnd: (event) => {
+                article_assist.documents.refreshDocument();
+            }
+        });
+    },
+    showSupportingArguments: function (event) {
+        const targ = article_assist.util.getEventTarg(event);
+        const sibling = targ.closest('.js-parent-container').find('.js-accordion');
 
-function refreshDocument()
-{
-   jQuery('#js-sortable-paragraphs li').each((index, element) => {
-        element = jQuery(element);
-        element.find('input[name$="[primary_argument]"]').attr('name', `document[paragraphs][${index}][primary_argument]`);
-        element.find('input[name$="[supporting_arguments][]"]').attr('name', `document[paragraphs][${index}][supporting_arguments][]`);
-    });
+        if (sibling.hasClass('show')) {
+            return;
+        }
 
-   refreshPreview();
-}
-
-function showSupportingArguments(event){
-    const targ = jQuery(event.target || event.srcElement);
-    const sibling = targ.closest('.js-parent-container').find('.js-accordion');
-
-    if (sibling.hasClass('show')) {
-        return;
+        jQuery('.js-accordion.show').collapse('hide');
+        sibling.collapse('show');
     }
+};
+article_assist.keyboard = {
+    dispatch: function (event) {
+        const key = event.key.toLowerCase();
+        switch (key) {
+            case 'insert':
+            case 'enter':
+            case 'backspace':
+            case 'delete':
+                article_assist.keyboard[key](event);
+                break;
+      }
+    },
 
-    jQuery('.js-accordion.show').collapse('hide');
-    sibling.collapse('show');
+    insert: function (event){
+        let targ =  article_assist.util.getEventTarg(event);
+
+        const sortGroup = targ.closest('.js-sort-group');
+        const viewTemplate = targ.attr('data-view-template');
+        const url = `/documents/form?view_template=${viewTemplate}`;
+
+        article_assist.util.makeRequest(url, 'get')
+            .done(function(data, textStatus, jqXHR) {
+                sortGroup.append(data.body);
+                article_assist.documents.refreshDocument();
+                article_assist.documents.initSortable();
+                sortGroup.find('input').last().focus();
+            });
+    },
+
+    enter: function (event) {
+
+    },
+
+    backspace: function (event){
+
+    },
+
+    delete: function (event) {
+        console.log(event.keyCode);
+        const targ =  article_assist.util.getEventTarg(event);
+        const parent = targ.closest('.js-parent-container');
+        parent.remove();
+        article_assist.documents.refreshDocument();
+    }
 }

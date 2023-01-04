@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Mvsc\Contracts;
 
-use App\Services\Mvsc\Requests\Request;
+use App\Services\Mvsc\Requests\MvscRequest;
 
 interface SingleTaskController
 {

@@ -24,6 +24,13 @@ class Paragraphs extends MvscBase
         'supporting_arguments'
     ];
 
+    protected ?array $formValidationRules = [
+        'paragraph_id'=> 'integer',
+        'document_id' => 'integer',
+        'primary_argument' => 'required_unless:paragraph_id, null|string|nullable',
+        'supporting_arguments.*' => 'string|nullable'
+    ];
+
     use Eloquent\Factories\HasFactory;
 
     public function Document(): Eloquent\Relations\BelongsTo
@@ -33,16 +40,6 @@ class Paragraphs extends MvscBase
             'document_id',
             'document_id')
             ->withDefault();
-    }
-
-    public function getFormValidationRules(?array $additionalRules = []): array
-    {
-        return [
-            'paragraph_id'=> 'integer',
-            'document_id' => 'integer',
-            'primary_argument' => 'required_unless:paragraph_id, null|string|nullable',
-            'supporting_arguments.*' => 'string|nullable'
-        ] + $additionalRules;
     }
 
     protected function supportingArguments(): Attribute {

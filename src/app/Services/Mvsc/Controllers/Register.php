@@ -2,30 +2,29 @@
 
 namespace App\Services\Mvsc\Controllers;
 
+use App\Services\Mvsc\Models\MvscBase;
 use App\Services\Mvsc\Requests\MvscRequest;
 use Illuminate\Support\Facades\View as ViewFactory;
 use Illuminate\View\View;
 
 /**
- * Handles CRUD Read operations
+ * Handles input validation
  */
-class Get extends Controller
+class Register extends Controller
 {
     protected ?View $view = null;
 
     public function execute(): bool
     {
-        $viewData = [
-            'model' => $this->getModel(id: $this->request->getId()),
-            'request' => $this->request,
-            'msgQue' => $this->request->getMsgQue()
-        ];
+        $model = $this->getModel('User');
+        $request = $this->request;
 
-        $this->view = ViewFactory::make(
-            $this->request->getViewTemplate(),
-            $viewData
-        );
-
+        /**
+         * Get the model
+         * validate the input data
+         * render the view with validation error data
+         * or return true
+         */
         return parent::execute();
     }
 

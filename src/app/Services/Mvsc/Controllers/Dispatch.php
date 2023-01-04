@@ -3,41 +3,41 @@
 namespace App\Services\Mvsc\Controllers;
 
 use App\Services\Mvsc\Contracts\SingleTaskController;
-use App\Services\Mvsc\Contracts\SystemNotifications;
+
 use Illuminate\Container\Container;
-use App\Services\Mvsc\Requests\Request;
-use Illuminate\Support\Facades\App;
+use App\Services\Mvsc\Requests\MvscRequest;
+
 use Throwable;
 
 class Dispatch extends Controller
 {
     public function __construct(
-        Container $app,
-        Request $request,
-        SystemNotifications $msgQue
+        Container   $app,
+        MvscRequest $request,
     ) {
-        parent::__construct($app, $request, $msgQue);
+        parent::__construct($app, $request);
     }
 
     public function execute(): bool
     {
         try {
-            $this->setSubController(
-                $this->buildTaskControllers(
-                    $this->request
-                ))
-                ->executeSubController();
+            $taskController = $this->buildTaskControllers($this->request);
 
+            $this->setSubController($taskController);
+
+            $result = parent::execute();
         } catch (Throwable $e){
-            $this->msgQue->addMessage($e->getMessage(), 'errors');
+            $this->request->getMsgQue()->addMessage(
+                $e->getMessage(), 'errors'
+            );
 
             return false;
         }
 
-        return true;
+        return $result;
     }
 
-    protected function buildTaskControllers(Request $request): SingleTaskController
+    protected function buildTaskControllers(MvscRequest $request): SingleTaskController
     {
         $tasks = $request->getTaskList();
 
@@ -47,22 +47,22 @@ class Dispatch extends Controller
         $controller = null;
         $subController = null;
 
-        foreach ($tasks AS $index => $task) {
-            $controllerName = 'App\Services\Mvsc\Controllers\\' . $task;
+        foreach ($tasks AS $task) {
+            $controllerName = 'App\Services\Mvsc\Controllers\\' . ucfirst(strtolower($task));
             if (!class_exists($controllerName)) {
                 continue;
             }
 
             /** @var SingleTaskController $controller */
             $controller = new $controllerName(
-                $this->app, $this->request, $this->msgQue);
+                $this->app, $this->request);
 
             $controller->setSubController($subController);
             $subController = $controller;
         }
 
         if (!$controller instanceof SingleTaskController){
-            $controller = new Get($this->app, $this->request, $this->msgQue);
+            $controller = new Get($this->app, $this->request);
         }
 
         return $controller;
@@ -72,12 +72,13 @@ class Dispatch extends Controller
     public function getResponse(): mixed
     {
         $response = $this->getSubControllerResponse();
+        $mgsQue = $this->request->getMsgQue();
 
-        if (empty($response) && $this->msgQue->has('errors'))
+        if (empty($response) && $mgsQue->has('errors'))
         {
             return view('system.error',
                 [
-                    'msgQue' => $this->msgQue
+                    'msgQue' => $mgsQue
                 ]
             );
         }

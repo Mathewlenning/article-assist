@@ -22,6 +22,13 @@ class Documents extends MvscBase
         'title'
     ];
 
+    protected ?array $formValidationRules = [
+        'document_id' => 'integer',
+        'user_id' => 'integer',
+        'title' => 'required_unless:document_id,null|string',
+        'paragraphs' => 'array'
+    ];
+
     public function owner(): Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(
@@ -34,16 +41,6 @@ class Documents extends MvscBase
     public function paragraphs(): Eloquent\Relations\HasMany
     {
         return $this->hasMany(Paragraphs::class);
-    }
-
-    public function getFormValidationRules(?array $additionalRules = []): array
-    {
-        $return = [
-                'document_id' => 'integer',
-                'user_id' => 'integer',
-                'title' => 'required_unless:document_id,null|string',
-                'paragraphs' => 'array'
-        ] + $additionalRules;
     }
 
     public function getFormInputName(): string

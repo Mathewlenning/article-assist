@@ -22,19 +22,20 @@ class Put extends Controller
             $this->updateRecord($model->find($id));
         }
 
-        $this->msgQue->addMessage('Record(s) updated');
+        $this->request->getMsgQue()->addMessage('Record(s) updated');
 
-        return $this->executeSubController();
+        return parent::execute();
     }
 
     protected function updateRecord(MvscBase $recordModel)
     {
-        if (!$recordModel->authorize('update', $this->request->user()))
+        $request = $this->request;
+        if (!$recordModel->authorize('update', $request->user()))
         {
             throw new AuthorizationException(code: 401);
         }
 
-        $validated = $this->validateRequestInput($this->request, $recordModel);
+        $validated = $request->validateRequest($recordModel);
         $newRecord = $validated + $recordModel->toArray();
         $recordModel->update($newRecord);
     }

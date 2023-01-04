@@ -1,21 +1,25 @@
 <?php
-$paragraphs = $paragraphs ?? ['primary_argument' => '', 'supporting_arguments' => []];
+/**
+ * @var \App\Models\Paragraphs|array            $paragraph
+ * @var \App\Services\Mvsc\Requests\MvscRequest $request
+ */
+$paragraph = $paragraph ?? ['primary_argument' => '', 'supporting_arguments' => []];
 $index = $request->input('index', 0);
-    ?>
+?>
 <li class="list-group-item p-1 js-parent-container">
     <div class="row">
         <div class="col">
             <div class="input-group">
                 @include('paragraphs.form.inputs.sort')
                 <input type="text"
-                       name="document[paragraphs][{{$index}}][primary_argument]"
+                       name="documents[paragraphs][{{$index}}][primary_argument]"
                        value="{{$paragraph['primary_argument']}}"
                        class="form-control"
-                       onfocusin="showSupportingArguments(event);"
-                       onkeyup="refreshPreview()"
+                       data-view-template="paragraphs.form.inputs"
+                       onfocusin="article_assist.documents.showSupportingArguments(event)"
+                       onkeyup="article_assist.keyboard.dispatch(event)"
                        placeholder="Primary Argument"
                 />
-                @include('paragraphs.form.inputs.delete')
             </div>
         </div>
     </div>
@@ -28,12 +32,6 @@ $index = $request->input('index', 0);
                 @include('paragraphs.form.inputs.sentence')
             @endif
         </div>
-        <div class="p-2 text-right">
-            <a href="javascript:void(0)" class="btn btn-light btn-sm" onclick="addInput(event)" data-view-template="paragraphs.form.inputs.sentence">
-                <svg>
-                    <use href="#icon-plus"/>
-                </svg>
-            </a>
-        </div>
     </div>
 </li>
+

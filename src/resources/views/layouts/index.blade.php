@@ -23,6 +23,7 @@
     <title>{{$page_title}}</title>
     @include('assets.bootstrap.css')
     @include('assets.app.css')
+    @include('assets.jquery.js')
     @include('assets.app.js')
 </head>
 <body class="antialiased {{$body_class}}">

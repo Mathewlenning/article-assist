@@ -25,3 +25,7 @@ svg {
     stroke: currentColor;
     fill: currentColor;
 }
+
+.display-none {
+    display: none;
+}

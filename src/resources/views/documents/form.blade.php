@@ -6,3 +6,9 @@ $additionalScriptsTemplate = 'assets.sortable.js';
 ?>
 
 @include('layouts.index')
+
+<script>
+    jQuery(document).ready(function () {
+        article_assist.documents.initSortable();
+    })
+</script>

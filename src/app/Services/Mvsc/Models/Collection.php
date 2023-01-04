@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Mvsc\Models;
 
 use Illuminate\Database\Eloquent;
+use Illuminate\Database\Eloquent\Collection AS EloquentCollection;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 
-class Collection extends Eloquent\Collection
+class Collection extends EloquentCollection
 {
     protected Eloquent\Model $modelClass;
 
@@ -30,5 +32,13 @@ class Collection extends Eloquent\Collection
         }
 
         return new static($this->modelClass, [App::make($this->modelClass::class)]);
+    }
+
+    /**
+     * Overridden to add the modelClass param to the static constructor.
+     */
+    public function map(callable $callback): static
+    {
+        return new static($this->modelClass, Arr::map($this->items, $callback));
     }
 }

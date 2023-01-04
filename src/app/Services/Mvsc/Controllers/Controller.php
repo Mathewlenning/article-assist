@@ -3,18 +3,13 @@
 namespace App\Services\Mvsc\Controllers;
 
 use App\Services\Mvsc\Contracts\SingleTaskController;
-use App\Services\Mvsc\Contracts\SystemNotifications;
 use App\Services\Mvsc\Models\MvscBase;
 use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use App\Services\Mvsc\Requests\Request;
+use App\Services\Mvsc\Requests\MvscRequest;
 use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Support\Facades\Validator as ValidatorFactory;
-use Illuminate\Validation\Validator;
-use RuntimeException;
 
 
 abstract class Controller extends BaseController implements SingleTaskController
@@ -26,9 +21,8 @@ abstract class Controller extends BaseController implements SingleTaskController
     protected ?SingleTaskController $subController = null;
 
     public function __construct(
-        protected Container $app,
-        protected Request $request,
-        protected SystemNotifications $msgQue
+        protected Container   $app,
+        protected MvscRequest $request,
     ) {
     }
 
@@ -66,7 +60,7 @@ abstract class Controller extends BaseController implements SingleTaskController
         return $this->subController->getResponse();
     }
 
-    protected function getModel(string $name = '', ?int $id = null): ?Model
+    protected function getModel(string $name = '', ?int $id = null): ?MvscBase
     {
         if (empty($name)) {
             $name = $this->request->getView();
@@ -79,16 +73,5 @@ abstract class Controller extends BaseController implements SingleTaskController
         }
 
         return $model->findOrNew($id);
-    }
-
-    protected function logErrorsToQueue(array $errors)
-    {
-        foreach ($errors AS $errorGroup)
-        {
-            foreach ($errorGroup AS $msg)
-            {
-                $this->msgQue->addMessage($msg, 'errors');
-            }
-        }
     }
 }

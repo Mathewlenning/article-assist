@@ -25,14 +25,14 @@ class Ajax extends Controller
     protected function getNotifications(): array
     {
         return [
-            'raw' => $this->msgQue->getMessages(),
+            'raw' => $this->request->getMsgQue()->getMessages(),
             'formatted' => $this->getFormattedMessages()
         ];
     }
 
     protected function getFormattedMessages(): string
     {
-        return ViewFactory::make('system.notifications', ['msgQue' => $this->msgQue])->render();
+        return ViewFactory::make('system.notifications', ['msgQue' => $this->request->getMsgQue()])->render();
     }
 
     protected function getResponseBody(): mixed

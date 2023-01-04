@@ -2,11 +2,11 @@
 
 namespace App\Services\Mvsc\Controllers;
 
-use App\Services\Mvsc\Requests\Request;
+use App\Services\Mvsc\Requests\MvscRequest;
 
 class Delete extends Controller
 {
-    public function execute(Request $request): bool
+    public function execute(): bool
     {
 
     }

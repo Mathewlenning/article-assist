@@ -4,11 +4,7 @@ namespace App\Services\Mvsc\Models;
 
 use App\Models\User;
 use App\Services\Mvsc\Contracts\ValidationRules;
-use App\Services\Mvsc\Requests\Request;
-use App\Services\Mvsc\SystemNotifications\MessageQueue;
 use Illuminate\Database\Eloquent;
-use Illuminate\Support\Facades\Validator as ValidatorFactory;
-use RuntimeException;
 
 /**
 * @mixin \Eloquent
@@ -16,6 +12,8 @@ use RuntimeException;
 abstract class MvscBase extends Eloquent\Model implements ValidationRules
 {
     protected ?string $formInputName = null;
+
+    protected ?array $formValidationRules = [];
 
     /**
      * Create a new Eloquent Collection instance.
@@ -30,35 +28,42 @@ abstract class MvscBase extends Eloquent\Model implements ValidationRules
 
     public function getFormInputName(): string
     {
-        if(!empty($this->formInputName)){
+        if (!empty($this->formInputName))
+        {
             return $this->formInputName;
         }
 
         $parts = explode('\\', static::class);
 
-        if (!is_array($parts)){
-            $parts = ['form'];
+        if (!is_array($parts))
+        {
+            $parts = [$parts];
         }
 
         $this->formInputName = strtolower(array_pop($parts));
+
         return $this->formInputName;
     }
 
-    protected function validateRequestInput(Request $request, MessageQueue $msgQue): array
+    public function setFormValidationRules(array $rules): static
     {
-        $validator = ValidatorFactory::make(
-            $this->request->all()[$this->getFormInputName()],
-            $this->getFormValidationRules()
-        );
+        $this->formValidationRules = $rules;
 
-        if ($validator->fails())
-        {
-            $this->logErrorsToQueue($validator->errors()->toArray());
-            throw new RuntimeException(code:422);
-        }
-
-        return $validator->safe()->all();
+        return $this;
     }
+
+    public function addFormValidationRules(array $additionalRules): static
+    {
+        $this->formValidationRules += $additionalRules;
+
+        return $this;
+    }
+
+    public function getFormValidationRules(?array $additionalRules = []): array
+    {
+        return $this->formValidationRules + $additionalRules;
+    }
+
     /**
      * This method is intended to be overridden by descendants when they want
      * to create their related models with one form input.

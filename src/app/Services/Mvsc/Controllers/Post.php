@@ -15,20 +15,20 @@ class Post extends Controller
 
     public function execute(): bool
     {
-        /** @var MvscBase $model */
         $model = $this->getModel();
+        $request = $this->request;
 
-        if (!$model->authorize('create', $this->request->user()))
+        if (!$model->authorize('create', $request->user()))
         {
             throw new AuthorizationException(code: 401);
         }
 
-        $attributes = $this->validateRequestInput($this->request, $model);
+        $attributes = $request->validateRequest($model);
         $this->model = $model->create($attributes)->createDependents($attributes);
 
-        $this->msgQue->addMessage('Record(s) created');
+        $this->request->getMsgQue()->addMessage('Record(s) created');
 
-        return $this->executeSubController();
+        return parent::execute();
     }
 
     public function getResponse(): mixed

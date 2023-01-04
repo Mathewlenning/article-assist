@@ -12,12 +12,12 @@ if (!isset($canDelete)) {
         <div class="input-group">
             @include('paragraphs.form.inputs.sort')
             <input type="text"
-                   name="document[paragraphs][{{$index}}][supporting_arguments][]"
+                   name="documents[paragraphs][{{$index}}][supporting_arguments][]"
                    value="{{$supporting_argument}}"
                    class="form-control"
+                   data-view-template="paragraphs.form.inputs.sentence"
                    placeholder="Supporting Argument"
-                   onkeyup="refreshPreview()"/>
-            @include('paragraphs.form.inputs.delete')
+                   onkeyup="article_assist.keyboard.dispatch(event)"/>
         </div>
     </div>
 </div>

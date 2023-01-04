@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Dispatcher;
-use App\Services\Mvsc\Requests\Request;
-use Illuminate\Http\JsonResponse;
+use App\Services\Mvsc\Requests\MvscRequest;
+use App\Services\Mvsc\SystemNotifications\MessageQueue;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,12 +18,14 @@ use Illuminate\Support\Facades\View;
 |
 */
 Route::group(['middleware' => ['XssSanitizer']], function () {
-    Route::any( '/{view?}/{template?}/{id?}', function (Request $request, App $app, $view = null, $template = null, $id = null) {
-        $request->setView($view)->setViewTemplate($template)->setIds($id);
+    Route::any( '/{view?}/{template?}/{id?}',
+        function (Request $request, MessageQueue $msgQue, $view = null, $template = null, $id = null)
+        {
+            $mvscRequest = new MvscRequest($request, $msgQue, $view, $template, $id);
+            $controller = App::makeWith(Dispatcher::class, ['request' => $mvscRequest]);
+            $controller->execute();
 
-        $controller = App::makeWith(Dispatcher::class, ['request' => $request]);
-        $controller->execute();
-
-        return $controller->getResponse();
-    });
+            return $controller->getResponse();
+        }
+    );
 });
